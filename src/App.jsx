@@ -5,12 +5,13 @@ import Login from "./pages/Login";
 import { store } from "./redux/store";
 import { useEffect } from "react";
 import SnackbarManager from "./components/SnackbarManager";
-import Profile from "./pages/Profile";
 import { useDispatch } from "react-redux";
 import { getCurrentLoginInformationsWithRoles } from "./redux/features/authSlice";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import AuthGuard from "./components/AuthGuard";
 import Products from "./pages/Catalog/Products";
+import Categories from "./pages/Catalog/Categories";
+import ProductTags from "./pages/Catalog/ProductTags";
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -40,23 +41,32 @@ function AppContent() {
             </AuthGuard>
           }
         />
+
         <Route
-          path="/profile"
-          element={
-            <AuthGuard>
-              <Profile />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/Products"
+          path="/products"
           element={
             <AuthGuard>
               <Products />
             </AuthGuard>
           }
         />
-        <Route path="*" element={<Login />} />
+        <Route
+          path="/categories"
+          element={
+            <AuthGuard>
+              <Categories />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/product-tags"
+          element={
+            <AuthGuard>
+              <ProductTags />
+            </AuthGuard>
+          }
+        />
+        <Route path="*" element={<Dashboard />} />
       </Routes>
     </div>
   );

@@ -22,13 +22,13 @@ import {
   ExpandMore,
   ProductionQuantityLimits,
   Category,
-  Class,
+  Label,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../redux/features/authSlice";
 import ThemeToggle from "./ThemeToggle";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 
 const drawerWidth = 240;
@@ -43,7 +43,6 @@ const Sidebar = () => {
     return Cookies.get("isCollapsed") === "true";
   });
   const [openSubmenu, setOpenSubmenu] = useState();
-
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -60,24 +59,61 @@ const Sidebar = () => {
 
   const menuItems = [
     {
-      text: "Dashboard",
+      text: "Yönetim Paneli",
       icon: <DashboardIcon />,
       path: "/dashboard",
+      mainPath: "/dashboard",
     },
     {
       text: "Katalog",
       icon: <Category />,
       path: "/catalog",
+      mainPath: "/catalog",
+
       submenu: [
         {
           text: "Ürünler",
           icon: <ProductionQuantityLimits />,
           path: "/products",
+          mainPath: "/catalog",
         },
-        { text: "Kategori", icon: <Class />, path: "/categories" },
+        {
+          text: "Kategori",
+          icon: <Category />,
+          path: "/categories",
+          mainPath: "/catalog",
+        },
+        {
+          text: "Ürün Etiketleri",
+          icon: <Label />,
+          path: "/product-tags",
+          mainPath: "/catalog",
+        },
       ],
     },
   ];
+
+  useEffect(() => {
+    let found = false;
+    menuItems.forEach((item) => {
+      if (item.path === location.pathname) {
+        setOpenSubmenu(item.path);
+        found = true;
+      }
+      if (item.submenu) {
+        item.submenu.forEach((sub) => {
+          if (sub.path === location.pathname) {
+            setOpenSubmenu(item.path);
+            found = true;
+          }
+        });
+      }
+    });
+
+    if (!found) {
+      setOpenSubmenu(null);
+    }
+  }, [location.pathname]);
 
   const drawerContent = (
     <Box
@@ -123,36 +159,29 @@ const Sidebar = () => {
 
       <List>
         {menuItems.map((item) => {
-          const isSubmenuActive = item.submenu?.some(
-            (subItem) => location.pathname === subItem.path
-          );
-
           return (
             <div key={item.text}>
               <ListItem
                 key={item.text}
                 onClick={() =>
-                  item.submenu ? setOpenSubmenu(item.path) : navigate(item.path)
+                  item.submenu
+                    ? setOpenSubmenu((prev) =>
+                        prev !== item.path ? item.path : null
+                      )
+                    : navigate(item.path)
                 }
-                sx={(theme) => ({
+                sx={() => ({
                   width: "auto",
+                  marginX: "8px",
+                  borderRadius: "8px",
                   justifyContent: isCollapsed ? "center" : "flex-start",
                   bgcolor:
-                    location.pathname === item.path || isSubmenuActive
-                      ? theme.palette.mode === "dark"
-                        ? "primary.dark"
-                        : "primary.main"
+                    location.pathname === item.path
+                      ? "action.selected"
                       : "transparent",
                   "&:hover": {
                     cursor: "pointer",
-                    bgcolor:
-                      location.pathname === item.path
-                        ? theme.palette.mode === "dark"
-                          ? "primary.main"
-                          : "primary.dark"
-                        : theme.palette.mode === "dark"
-                        ? "action.selected"
-                        : "action.hover",
+                    bgcolor: "action.hover",
                   },
                   transition: "background-color 0.2s",
                 })}
@@ -165,8 +194,22 @@ const Sidebar = () => {
                   {item.icon}
                 </ListItemIcon>
                 {!isCollapsed && <ListItemText primary={item.text} />}
-                {item.submenu &&
-                  (openSubmenu == item.path ? <ExpandLess /> : <ExpandMore />)}
+                {item.submenu && (
+                  <Box
+                    component="span"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      transition: "transform 0.3s ease-in-out",
+                      transform:
+                        openSubmenu === item.path
+                          ? "rotate(180deg)"
+                          : "rotate(0deg)",
+                    }}
+                  >
+                    <ExpandMore />
+                  </Box>
+                )}
               </ListItem>
               {item.submenu && (
                 <Collapse
@@ -179,23 +222,19 @@ const Sidebar = () => {
                       <ListItem
                         key={subItem.text}
                         onClick={() => navigate(subItem.path)}
-                        sx={(theme) => ({
+                        sx={() => ({
                           width: "auto",
+                          marginLeft: "24px",
+                          marginRight: "8px",
+                          borderRadius: "8px",
                           justifyContent: isCollapsed ? "center" : "flex-start",
                           bgcolor:
                             location.pathname === subItem.path
-                              ? "primary.light"
+                              ? "action.selected"
                               : "transparent",
                           "&:hover": {
                             cursor: "pointer",
-                            bgcolor:
-                              location.pathname === item.path
-                                ? theme.palette.mode === "dark"
-                                  ? "primary.main"
-                                  : "primary.dark"
-                                : theme.palette.mode === "dark"
-                                ? "action.selected"
-                                : "action.hover",
+                            bgcolor: "action.hover",
                           },
                           transition: "background-color 0.2s",
                         })}
